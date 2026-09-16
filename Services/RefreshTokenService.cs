@@ -3,6 +3,7 @@ public interface IRefreshTokenService
 {
     Task<RefreshToken> AddTokenAsync(RefreshToken token);
     Task<RefreshToken> GetTokenByTokenNameAsync(string tokenName);
+    Task<RefreshToken> UpdateTokenRevokeAsync(RefreshTokenRequestDTO rtRequestDTO);
 }
 
 public class RefreshTokenService: IRefreshTokenService
@@ -13,14 +14,19 @@ public class RefreshTokenService: IRefreshTokenService
         _refreshTokenRepo = refreshTokenRepo;
     }
 
-    public Task<RefreshToken> AddTokenAsync(RefreshToken token)
+    public async Task<RefreshToken> AddTokenAsync(RefreshToken token)
     {
-        return _refreshTokenRepo.AddTokenAsync(token);
+        return await _refreshTokenRepo.AddTokenAsync(token);
     }
 
-    public Task<RefreshToken> GetTokenByTokenNameAsync(string tokenName)
+    public async Task<RefreshToken> GetTokenByTokenNameAsync(string tokenName)
     {
-        return _refreshTokenRepo.GetTokenByTokenNameAsync(tokenName);
+        return await _refreshTokenRepo.GetTokenByTokenNameAsync(tokenName);
+    }
+
+    public async Task<RefreshToken> UpdateTokenRevokeAsync(RefreshTokenRequestDTO rtRequestDTO)
+    {
+        return await _refreshTokenRepo.UpdateTokenRevokeAsync(rtRequestDTO);
     }
 
 }

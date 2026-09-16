@@ -7,6 +7,7 @@ public interface IRefreshTokenRepository
 {
     Task<RefreshToken> AddTokenAsync(RefreshToken token);
     Task<RefreshToken> GetTokenByTokenNameAsync(string tokenName);
+    Task<RefreshToken> UpdateTokenRevokeAsync(RefreshTokenRequestDTO rtRequestDTO);
 }
 
 public class RefreshTokenRepository: IRefreshTokenRepository
@@ -30,4 +31,15 @@ public class RefreshTokenRepository: IRefreshTokenRepository
         
     }
 
+    public async Task<RefreshToken> UpdateTokenRevokeAsync(RefreshTokenRequestDTO rtRequestDTO)
+    {
+        var token = _context.RefreshToken.FirstOrDefault(rf => rf.Token == rtRequestDTO.RefreshToken);
+        if(token == null)
+        {
+            return null;
+        }
+        token.IsRevoked = true;
+        await _context.SaveChangesAsync();
+        return token;
+    }
 }

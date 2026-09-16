@@ -6,6 +6,7 @@ using OrderAndPaymentAPI.Entities;
 public interface IUserRepository
 {
     Task<User> GetByEmailAsync(string email);
+    Task<User> GetByIdAsync(int Id);
 }
 
 public class UserRepository: IUserRepository {
@@ -19,5 +20,10 @@ public class UserRepository: IUserRepository {
     {
         return await _context.User.SingleOrDefaultAsync(u => u.Email == email);
         
+    }
+
+    public async Task<User> GetByIdAsync(int Id)
+    {
+        return await _context.User.FindAsync(Id);
     }
 }

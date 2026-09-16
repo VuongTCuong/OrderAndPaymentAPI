@@ -154,3 +154,4 @@ E:\ASP\OrderAndPaymentAPI\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.dl
 E:\ASP\OrderAndPaymentAPI\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 E:\ASP\OrderAndPaymentAPI\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 E:\ASP\OrderAndPaymentAPI\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+E:\ASP\OrderAndPaymentAPI\obj\Debug\net10.0\OrderAndPaymentAPI.sourcelink.json

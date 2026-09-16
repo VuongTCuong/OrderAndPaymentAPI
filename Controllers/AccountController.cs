@@ -1,4 +1,5 @@
 
+using System.Security.Principal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,12 +30,23 @@ public class AccountController: ControllerBase
             return Unauthorized(new {message = "Wrong Email or Password"});
         }
 
+        var newRefreshToken = _accountService.GenerateRefreshToken();
+
+        await _refreshTokenService.AddTokenAsync(new RefreshToken{
+            Token = newRefreshToken,
+            UserId = user.Id,
+            User = user,
+            ExpiredDate = DateTime.UtcNow.AddDays(7),
+            IsRevoked = false
+
+        });    
+
         var token = _accountService.GenerateAccessToken(user);
         return Ok(
             new
             {
                 AccessToken = token,
-                RefreshToken = _accountService.GenerateRefreshToken()
+                RefreshToken = newRefreshToken
             }
         );
     }
@@ -46,18 +58,22 @@ public class AccountController: ControllerBase
         var refreshToken = await _refreshTokenService.GetTokenByTokenNameAsync(rtRequestDTO.RefreshToken);
         if(refreshToken == null || refreshToken.IsRevoked == true || refreshToken.ExpiredDate < DateTime.UtcNow)
         {
-            return Unauthorized();
+            return Unauthorized("Invalid or expired token");
         }
-        refreshToken.IsRevoked = true;
-        
-        return Ok();
+
+        var refreshTokenResponse = await _accountService.Refresh(refreshToken);
+        return Ok(refreshTokenResponse);
     }
+
     [Authorize]
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> Logout(RefreshTokenRequestDTO rtRequestDTO)
     {
-        var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ","");
         
-        return Ok(new {token});
+        var refreshToken = await _refreshTokenService.UpdateTokenRevokeAsync(rtRequestDTO);
+        if(refreshToken == null){
+            return NotFound("Cannot found any token");
+        }
+        return Ok(refreshToken);
     }
 }
