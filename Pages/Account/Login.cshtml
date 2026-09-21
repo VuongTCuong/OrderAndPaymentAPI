@@ -1,0 +1,26 @@
+@page
+@model OrderAndPaymentAPI.Web.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Đăng nhập";
+}
+
+<div class="auth-wrap">
+    <h2>Đăng nhập</h2>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <p style="color:var(--red); font-size:0.9rem; margin-bottom:16px;">@Model.ErrorMessage</p>
+    }
+
+    <form method="post">
+        <div class="field">
+            <label for="Username">Tên đăng nhập</label>
+            <input type="text" id="Username" asp-for="Username" />
+        </div>
+        <div class="field">
+            <label for="Password">Mật khẩu</label>
+            <input type="password" id="Password" asp-for="Password" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Đăng nhập</button>
+    </form>
+</div>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] — Orderly</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="/">Order<span>ly</span></a>
+            <nav class="nav">
+                <a href="/Products">Sản phẩm</a>
+                <a href="/Cart">Giỏ hàng <span class="nav-cart-count">2</span></a>
+                <a href="/Orders">Đơn hàng</a>
+                <a href="/Account/Login">Đăng nhập</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            Orderly — giao diện demo dựa trên OrderAndPaymentAPI
+        </div>
+    </footer>
+</body>
+</html>
