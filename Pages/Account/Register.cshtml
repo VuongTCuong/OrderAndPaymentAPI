@@ -1,0 +1,30 @@
+@page "/Account/Register"
+@model OrderAndPaymentAPI.Web.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="auth-wrap">
+    <h2>Đăng ký</h2>
+
+    <div asp-validation-summary="ModelOnly" class="auth-error" role="alert"></div>
+
+    <form method="post">
+        <div class="field">
+            <label asp-for="FullName">Họ và tên</label>
+            <input asp-for="FullName" autocomplete="name" required />
+            <span asp-validation-for="FullName" class="auth-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Email">Email</label>
+            <input asp-for="Email" type="email" autocomplete="email" required />
+            <span asp-validation-for="Email" class="auth-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="Password">Mật khẩu</label>
+            <input asp-for="Password" type="password" autocomplete="new-password" required />
+            <span asp-validation-for="Password" class="auth-error"></span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Đăng ký</button>
+    </form>
+</div>

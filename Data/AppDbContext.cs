@@ -11,6 +11,8 @@ public class AppDbContext: DbContext
     public DbSet<Cart> Cart {get;set;}
     public DbSet<CartItem> CartItem {get; set;}
 
+    public DbSet<Order> Order {get;set;}
+    public DbSet<OrderItem> OrderItem {get;set;}
     public DbSet<RefreshToken> RefreshToken {get; set;}
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

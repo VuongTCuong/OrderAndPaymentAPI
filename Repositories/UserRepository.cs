@@ -5,6 +5,7 @@ using OrderAndPaymentAPI.Entities;
 
 public interface IUserRepository
 {
+    Task AddAsync(User user);
     Task<User> GetByEmailAsync(string email);
     Task<User> GetByIdAsync(int Id);
 }
@@ -14,6 +15,12 @@ public class UserRepository: IUserRepository {
     public UserRepository (AppDbContext context)
     {
         _context = context;
+    }
+
+    public async Task AddAsync(User user)
+    {
+        _context.User.Add(user);
+        await _context.SaveChangesAsync();
     }
 
     public async Task<User> GetByEmailAsync(string email)

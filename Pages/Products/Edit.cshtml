@@ -1,0 +1,35 @@
+@page "{Id:int}"
+@model OrderAndPaymentAPI.Pages.Products.EditModel
+@{
+    ViewData["Title"] = "Sửa sản phẩm";
+}
+
+<div class="container page-head">
+    <h1>Sửa sản phẩm</h1>
+</div>
+
+<div class="container" style="max-width: 480px;">
+    <form method="post">
+        <input type="hidden" asp-for="Product.Id" />
+
+        <div class="field">
+            <label asp-for="Product.Name">Tên sản phẩm</label>
+            <input asp-for="Product.Name" />
+        </div>
+
+        <div class="field">
+            <label asp-for="Product.Price">Giá</label>
+            <input asp-for="Product.Price" type="number" step="1000" />
+        </div>
+
+        <div class="field">
+            <label asp-for="Product.Stock">Tồn kho</label>
+            <input asp-for="Product.Stock" type="number" />
+        </div>
+
+        <div style="display:flex; gap:12px;">
+            <button type="submit" class="btn btn-primary">Lưu</button>
+            <a class="btn btn-outline" asp-page="/Products/Index">Hủy</a>
+        </div>
+    </form>
+</div>

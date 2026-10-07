@@ -3,6 +3,7 @@ using OrderAndPaymentAPI.Entities;
 
 public interface IUserService
 {
+    Task AddAsync(User user);
     Task<User> GetByEmailAsync(string email);
     Task<User> GetByIdAsync(int Id);
 }
@@ -15,6 +16,8 @@ public class UserService: IUserService
     {
         _userRepo = userRepo;
     }
+
+    public Task AddAsync(User user) => _userRepo.AddAsync(user);
 
     public async Task<User> GetByEmailAsync(string email)
     {

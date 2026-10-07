@@ -4,7 +4,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using OrderAndPaymentAPI.DTO;
 using OrderAndPaymentAPI.Entities;
 
 
@@ -14,6 +16,7 @@ public interface IAccountService
     string GenerateRefreshToken();
     Task<RefreshTokenResponseDTO> Refresh(RefreshToken refreshToken);
     Task<RefreshToken> UpdateTokenRevokeAsync(RefreshTokenRequestDTO rtRequestDTO);
+    Task<LoginResponseDTO> RegisterAsync(RegisterRequestDTO rrRequestDTO);
 }
 
 public class AccountService: IAccountService
@@ -21,11 +24,14 @@ public class AccountService: IAccountService
     private readonly IConfiguration _config;
     private readonly IUserRepository _userRepo;
     private readonly IRefreshTokenRepository _refreshTokenRepo;
-    public AccountService(IConfiguration config, IUserRepository userRepo, IRefreshTokenRepository refreshTokenRepo)
+    private readonly IPasswordHasher<User> _passwordHasher;
+    public AccountService(IConfiguration config, IUserRepository userRepo, 
+                        IRefreshTokenRepository refreshTokenRepo, IPasswordHasher<User> passwordHasher)
     {
         _config = config;
         _userRepo = userRepo;
         _refreshTokenRepo = refreshTokenRepo;
+        _passwordHasher = passwordHasher; 
     }
 
     public string GenerateAccessToken(User user)
@@ -87,5 +93,39 @@ public class AccountService: IAccountService
     public async Task<RefreshToken> UpdateTokenRevokeAsync(RefreshTokenRequestDTO rtRequestDTO)
     {
         return await _refreshTokenRepo.UpdateTokenRevokeAsync(rtRequestDTO);
+    }
+
+    public async Task<LoginResponseDTO> RegisterAsync(RegisterRequestDTO rrRequestDTO)
+    {
+        var user = new User
+        {
+            Fullname = rrRequestDTO.Fullname.Trim(),
+            Email = rrRequestDTO.Email,
+            Role = "user",
+            CreatedDate = DateTime.UtcNow
+        };
+        user.Password = _passwordHasher.HashPassword(user, rrRequestDTO.Password);
+        await _userRepo.AddAsync(user);
+
+        // sau khi đăng ký sẽ tự động đăng nhập và tạo 2 token
+
+        var newRefreshToken = GenerateRefreshToken();
+        await _refreshTokenRepo.AddTokenAsync(new RefreshToken{
+            Token = newRefreshToken,
+            UserId = user.Id,
+            User = user,
+            ExpiredDate = DateTime.UtcNow.AddDays(7),
+            IsRevoked = false
+
+        });    
+
+        var token = GenerateAccessToken(user);
+        return new LoginResponseDTO
+        {
+            UserId = user.Id,
+            Email = user.Email,
+            AccessToken = token,
+            RefreshToken = newRefreshToken
+        };
     }
 }

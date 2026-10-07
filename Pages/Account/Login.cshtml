@@ -7,6 +7,11 @@
 <div class="auth-wrap">
     <h2>Đăng nhập</h2>
 
+    @if (TempData["RegistrationSuccess"] is string registrationSuccess)
+    {
+        <p class="auth-success" role="status">@registrationSuccess</p>
+    }
+
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
         <p style="color:var(--red); font-size:0.9rem; margin-bottom:16px;">@Model.ErrorMessage</p>
@@ -14,8 +19,8 @@
 
     <form method="post">
         <div class="field">
-            <label for="Username">Tên đăng nhập</label>
-            <input type="text" id="Username" asp-for="Username" />
+            <label for="Email">Email</label>
+            <input type="text" id="Email" asp-for="Email" />
         </div>
         <div class="field">
             <label for="Password">Mật khẩu</label>
@@ -23,4 +28,7 @@
         </div>
         <button type="submit" class="btn btn-primary btn-block">Đăng nhập</button>
     </form>
+    <div class="auth-switch">
+        <a asp-page="/Account/Register">Đăng ký</a>
+    </div>
 </div>

@@ -4,7 +4,7 @@ using OrderAndPaymentAPI.Entities;
 
 namespace OrderAndPaymentAPI.Data;
 
-public class ProductConfiguration: IEntityTypeConfiguration<Cart>
+public class CartConfiguration: IEntityTypeConfiguration<Cart>
 {
     public void Configure(EntityTypeBuilder<Cart> builder)
     {

@@ -55,4 +55,16 @@ public class ProductController: ControllerBase
         }
         return NoContent();
     }
+
+    [Authorize(Roles = "admin")]
+    [HttpPut]
+    public async Task<IActionResult> UpdateProduct(UpdateProductDTO updateProductDTO)
+    {
+        var product = await _productService.GetProductByIdAsync(updateProductDTO.Id);
+        if(product == null)
+        {
+            return BadRequest(new {message = "Không tìm thấy sản phẩm để chỉnh sửa"});
+        }
+        return Ok(_productService.UpdateProductAsync(product, updateProductDTO));
+    }
 }

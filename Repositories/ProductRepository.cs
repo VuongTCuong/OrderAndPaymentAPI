@@ -9,9 +9,10 @@ namespace OrderAndPaymentAPI.Repositories;
 public interface IProductRepository
 {
     Task<List<Product>> GetAllAsync();
-    Task<Product> GetByIdAsync(int Id);
+    Task<Product?> GetByIdAsync(int Id);
     Task<Product> AddAsync(Product product);
     
+    Task<Product> UpdateAsync(Product product, UpdateProductDTO updateProductDTO);
     Task<bool> DeleteByIdAsync(int Id);
 }
 
@@ -29,7 +30,7 @@ public class ProductRepository: IProductRepository
         
     }
 
-    public async Task<Product> GetByIdAsync(int Id)
+    public async Task<Product?> GetByIdAsync(int Id)
     {
         return await _context.Product.FindAsync(Id);    
     }
@@ -40,7 +41,15 @@ public class ProductRepository: IProductRepository
         await _context.SaveChangesAsync();
         return product;
     }
+    public async Task<Product> UpdateAsync(Product product, UpdateProductDTO updateProductDTO)
+    {
+        product.Name = updateProductDTO.Name;
+        product.Price = updateProductDTO.Price;
+        product.Stock = updateProductDTO.Stock;
 
+        await _context.SaveChangesAsync();
+        return product;
+    }
     public async Task<bool> DeleteByIdAsync(int Id)
     {
         var product = await GetByIdAsync(Id);

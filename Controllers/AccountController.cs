@@ -2,6 +2,10 @@
 using System.Security.Principal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+using OrderAndPaymentAPI.Entities;
+using Microsoft.AspNetCore.Identity.Data;
+using OrderAndPaymentAPI.DTO;
 
 [ApiController]
 [Route("api/auth")]
@@ -10,12 +14,14 @@ public class AccountController: ControllerBase
 
     private readonly IAccountService _accountService;
     private readonly IUserService _userService;
+    private readonly IPasswordHasher<User> _passwordHasher;
 
     private readonly IRefreshTokenService _refreshTokenService;
-    public AccountController(IAccountService accountService, IUserService userService, IRefreshTokenService refreshTokenService)
+    public AccountController(IAccountService accountService, IUserService userService, IRefreshTokenService refreshTokenService, IPasswordHasher<User> passwordHasher)
     {
         _accountService = accountService;
         _userService = userService;
+        _passwordHasher = passwordHasher;
         _refreshTokenService = refreshTokenService;
     }
 
@@ -25,7 +31,7 @@ public class AccountController: ControllerBase
 
         var user = await _userService.GetByEmailAsync(userDTO.Email);
       
-        if (user == null || user.Password != userDTO.Password )
+        if (user == null || _passwordHasher.VerifyHashedPassword(user, user.Password, userDTO.Password) == PasswordVerificationResult.Failed)
         {
             return Unauthorized(new {message = "Wrong Email or Password"});
         }
@@ -43,8 +49,10 @@ public class AccountController: ControllerBase
 
         var token = _accountService.GenerateAccessToken(user);
         return Ok(
-            new
+            new LoginResponseDTO
             {
+                UserId = user.Id,
+                Email = user.Email,
                 AccessToken = token,
                 RefreshToken = newRefreshToken
             }
@@ -75,5 +83,19 @@ public class AccountController: ControllerBase
             return NotFound("Cannot found any token");
         }
         return Ok(refreshToken);
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(RegisterRequestDTO rrRequestDTO)
+    {
+        rrRequestDTO.Email = rrRequestDTO.Email.Trim();
+        var user = await _userService.GetByEmailAsync(rrRequestDTO.Email);
+        if (user is not null)
+        {
+            return BadRequest(new {error = "Email này đã được đăng ký."});
+        }
+
+        var response = await _accountService.RegisterAsync(rrRequestDTO);
+        return Ok(response);
     }
 }

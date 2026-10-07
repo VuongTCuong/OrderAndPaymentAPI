@@ -2,11 +2,16 @@
 @model OrderAndPaymentAPI.Web.Pages.Products.IndexModel
 @{
     ViewData["Title"] = "Sản phẩm";
+    bool isAdmin = User.IsInRole("admin");
 }
 
 <div class="container page-head">
     <h1>Sản phẩm</h1>
     <p>@Model.Products.Count sản phẩm đang có sẵn</p>
+    @if (isAdmin)
+    {
+        <a class="btn btn-primary" asp-page="/Products/Create">Thêm sản phẩm</a>
+    }
 </div>
 
 <div class="container product-grid">
@@ -16,10 +21,23 @@
             <h3>@product.Name</h3>
             <div class="product-price">@product.Price.ToString("N0") ₫</div>
             <div class="product-stock">Còn @product.Stock sản phẩm</div>
-            <form method="post">
-                <input type="hidden" name="productId" value="@product.Id" />
-                <button type="submit" class="btn btn-outline btn-block">Thêm vào giỏ</button>
-            </form>
+
+            @if (isAdmin)
+            {
+                <div style="display:flex; gap:8px;">
+                    <a class="btn btn-outline btn-sm" asp-page="/Products/Edit" asp-route-id="@product.Id">Sửa</a>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@product.Id" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này không?');">
+                        <button type="submit" class="btn btn-outline btn-sm">Xóa</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <form method="post">
+                    <input type="hidden" name="productId" value="@product.Id" />
+                    <button type="submit" class="btn btn-outline btn-block">Thêm vào giỏ</button>
+                </form>
+            }
         </div>
     }
 </div>
