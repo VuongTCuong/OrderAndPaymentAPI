@@ -1,0 +1,67 @@
+@page
+@model OrderAndPaymentAPI.Web.Pages.CartPage.IndexModel
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<div class="container page-head">
+    <h1>Giỏ hàng</h1>
+    <p>@Model.cart.CartItems.Count sản phẩm trong giỏ</p>
+</div>
+
+<div class="container">
+    <div class="product-errors" asp-validation-summary="All" role="alert"></div>
+    @if (Model.cart.CartItems.Count == 0)
+    {
+        <div class="empty-state">Giỏ hàng của bạn đang trống.</div>
+    }
+    else
+    {
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Đơn giá</th>
+                    <th>Số lượng</th>
+                    <th>Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.cart.CartItems)
+                {
+                    <tr>
+                        <td>@item.Product.Name</td>
+                        <td>@item.Product.Price.ToString("N0") ₫</td>
+                        <td>
+                            <form method="post" asp-page-handler="UpdateQuantity" class="cart-quantity-form">
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <div class="quantity-control">
+                                    <button type="button" class="quantity-step" data-step="-1" aria-label="Giảm số lượng @item.Product.Name">−</button>
+                                    <input id="cart-quantity-@item.ProductId" name="quantity" type="number" min="1" max="@Math.Max(1, item.Product.Stock)" step="1" value="@item.Quantity" aria-label="Số lượng @item.Product.Name" required />
+                                    <button type="button" class="quantity-step" data-step="1" aria-label="Tăng số lượng @item.Product.Name">+</button>
+                                </div>
+                                <button type="submit" class="btn btn-outline btn-sm">Cập nhật</button>
+                            </form>
+                        </td>
+                        <td>@((item.Product.Price * item.Quantity).ToString("N0")) ₫</td>
+                        <td>
+                        <form method = "post" asp-page-handler="DeleteCartItem" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng không?');">
+                            <input type="hidden" name="productId" value="@item.ProductId" />
+                            <button type="submit" class="btn btn-outline btn-sm">Xoá</button>
+                        </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="cart-summary">
+            <span>Tổng cộng</span>
+            <span class="total">@(Model.cart.CartItems.Sum(ci => ci.Quantity * ci.Product.Price).ToString("N0")) ₫</span>
+            <form method="post" asp-page-handler="Checkout">
+                <button type="submit" class="btn btn-primary">Tiến hành thanh toán</button>
+            </form>
+        </div>
+    }
+</div>
+<script src="~/js/product-quantity.js" asp-append-version="true" defer></script>

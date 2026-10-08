@@ -68,11 +68,13 @@ public class LoginModel : PageModel
         Response.Cookies.Append("accessToken", accessToken, CreateTokenCookieOptions(TimeSpan.FromMinutes(10)));
         Response.Cookies.Append("refreshToken", refreshToken, CreateTokenCookieOptions(TimeSpan.FromDays(7)));
 
+        
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, user.Fullname),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role)
+            new Claim(ClaimTypes.Role, user.Role),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(System.Globalization.CultureInfo.InvariantCulture)),
         };
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignInAsync(

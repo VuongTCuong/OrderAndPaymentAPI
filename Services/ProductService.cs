@@ -1,5 +1,6 @@
 using OrderAndPaymentAPI.DTO;
 using OrderAndPaymentAPI.Entities;
+using OrderAndPaymentAPI.Exceptions;
 using OrderAndPaymentAPI.Repositories;
 
 namespace OrderAndPaymentAPI.Services;
@@ -9,8 +10,8 @@ public interface IProductService
     Task<List<Product>> GetAllProductsAsync();
     Task<Product?> GetProductByIdAsync(int Id);
     Task<Product> AddProduct(ProductDTO productDTO);
-    Task<Product> UpdateProductAsync(Product product, UpdateProductDTO updateProductDTO);
-    Task<bool> DeleteProductById(int Id);
+    Task<Product> UpdateProductAsync(UpdateProductDTO updateProductDTO);
+    Task DeleteProductById(int Id);
 }
 
 public class ProductService: IProductService
@@ -32,6 +33,10 @@ public class ProductService: IProductService
     public async Task<Product?> GetProductByIdAsync(int Id)
     {   
         var product =  await _productRepo.GetByIdAsync(Id);
+        if (product == null)
+        {
+            throw new AppException("Sản phẩm không tồn tại",404);
+        }
         return product;
     }
 
@@ -46,12 +51,23 @@ public class ProductService: IProductService
         return await _productRepo.AddAsync(product);
     }
 
-    public async Task<Product> UpdateProductAsync(Product product, UpdateProductDTO updateProductDTO)
+    public async Task<Product> UpdateProductAsync(UpdateProductDTO updateProductDTO)
     {
+        var product = await _productRepo.GetByIdAsync(updateProductDTO.Id);
+        if(product == null)
+        {
+            throw new AppException("Sản phẩm muốn chỉnh sửa không tồn tại", 404);
+        }
+
         return await _productRepo.UpdateAsync(product,updateProductDTO);
     }
-    public async Task<bool> DeleteProductById(int Id)
+    public async Task DeleteProductById(int Id)
     {
-        return await _productRepo.DeleteByIdAsync(Id);
+        var product = await _productRepo.GetByIdAsync(Id);
+        if (product == null)
+        {
+            throw new AppException("Sản phẩm muốn xoá không tồn tại", 404);
+        }
+        await _productRepo.DeleteByIdAsync(product);
     }
 }

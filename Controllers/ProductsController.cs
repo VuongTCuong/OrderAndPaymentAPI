@@ -20,7 +20,6 @@ public class ProductController: ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetProduct()
     {
-        //call function from service
         var products = await _productService.GetAllProductsAsync();
         return Ok(products);
     }
@@ -29,10 +28,6 @@ public class ProductController: ControllerBase
     public async Task<IActionResult> GetProductById(int Id)
     {
         var product = await _productService.GetProductByIdAsync(Id);
-        if (product == null)
-        {
-            return NotFound("Cannot find any product");
-        }
         return Ok(product);
     }
     [Authorize(Roles = "admin")]
@@ -48,11 +43,7 @@ public class ProductController: ControllerBase
     [HttpDelete("delete/{Id}")]
     public async Task<IActionResult> DeleteProductById(int Id)
     {
-        bool result = await _productService.DeleteProductById(Id);
-        if (result == false)
-        {
-            return NotFound("Cannot find any product to delete");
-        }
+        await _productService.DeleteProductById(Id);
         return NoContent();
     }
 
@@ -60,11 +51,7 @@ public class ProductController: ControllerBase
     [HttpPut]
     public async Task<IActionResult> UpdateProduct(UpdateProductDTO updateProductDTO)
     {
-        var product = await _productService.GetProductByIdAsync(updateProductDTO.Id);
-        if(product == null)
-        {
-            return BadRequest(new {message = "Không tìm thấy sản phẩm để chỉnh sửa"});
-        }
-        return Ok(_productService.UpdateProductAsync(product, updateProductDTO));
+        var updatedProduct = await _productService.UpdateProductAsync(updateProductDTO);
+        return Ok(updatedProduct);
     }
 }

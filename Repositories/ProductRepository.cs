@@ -13,7 +13,7 @@ public interface IProductRepository
     Task<Product> AddAsync(Product product);
     
     Task<Product> UpdateAsync(Product product, UpdateProductDTO updateProductDTO);
-    Task<bool> DeleteByIdAsync(int Id);
+    Task DeleteByIdAsync(Product product);
 }
 
 public class ProductRepository: IProductRepository
@@ -50,15 +50,9 @@ public class ProductRepository: IProductRepository
         await _context.SaveChangesAsync();
         return product;
     }
-    public async Task<bool> DeleteByIdAsync(int Id)
+    public async Task DeleteByIdAsync(Product product)
     {
-        var product = await GetByIdAsync(Id);
-        if(product == null)
-        {
-            return false;
-        }
         _context.Product.Remove(product);
         await _context.SaveChangesAsync();
-        return true;
     }
 } 

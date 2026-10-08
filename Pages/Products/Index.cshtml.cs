@@ -3,18 +3,21 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using OrderAndPaymentAPI.Entities;
 using OrderAndPaymentAPI.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using OrderAndPaymentAPI.Exceptions;
 
 namespace OrderAndPaymentAPI.Web.Pages.Products;
 
 public class IndexModel : PageModel
 {
     private readonly IProductService _productService;
-
+    private readonly ICartService _cartService;
     public List<Product> Products { get; set; } = new();
 
-    public IndexModel(IProductService productService)
+    public IndexModel(IProductService productService, ICartService cartService)
     {
         _productService = productService;
+        _cartService = cartService;
     }
 
     public async Task OnGetAsync()
@@ -22,15 +25,32 @@ public class IndexModel : PageModel
         Products = await _productService.GetAllProductsAsync();
     }
 
-    public IActionResult OnPost(int productId)
+    public async Task<IActionResult> OnPostAsync(int productId, int quantity = 1)
     {
-        if (!(User.Identity?.IsAuthenticated ?? false))
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (User.Identity?.IsAuthenticated != true || string.IsNullOrEmpty(userIdClaim))
         {
             return RedirectToPage("/Account/Login");
         }
 
-        // TODO: gọi POST /api/cart/items để thêm sản phẩm vào giỏ hàng thật
-        return RedirectToPage("/Cart/Index");
+        if (!ModelState.IsValid)
+        {
+            await OnGetAsync();
+            return Page();
+        }
+
+        try
+        {
+            await _cartService.AddItemAsync(userIdClaim, productId, quantity);
+        }
+        catch (AppException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            await OnGetAsync();
+            return Page();
+        }
+
+        return RedirectToPage("/CartPage/Index");
     }
     
     public async Task<IActionResult> OnPostDeleteAsync(int Id)

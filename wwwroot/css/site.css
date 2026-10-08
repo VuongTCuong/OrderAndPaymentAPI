@@ -195,7 +195,24 @@ a:hover { text-decoration: underline; }
 
 .product-card form { margin-top: auto; }
 
+.product-add-form { display: grid; gap: 14px; }
+.product-quantity-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.product-quantity-row label { font-size: 0.82rem; color: var(--ink-muted); }
+.quantity-control { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.quantity-step { width: 36px; min-height: 40px; border: 0; background: var(--bg); color: var(--accent); font: inherit; font-size: 1.15rem; cursor: pointer; }
+.quantity-step:hover:not(:disabled) { background: var(--border); }
+.quantity-control input { width: 48px; min-width: 0; border: 0; border-left: 1px solid var(--border); border-right: 1px solid var(--border); background: var(--surface); color: var(--ink); font: inherit; text-align: center; appearance: textfield; -moz-appearance: textfield; }
+.quantity-control input::-webkit-inner-spin-button, .quantity-control input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.quantity-control:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.quantity-step:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.quantity-step:disabled, .product-add-form .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.product-errors { color: var(--red); font-size: 0.9rem; margin-bottom: 20px; }
+
 /* ---------- Cart ---------- */
+.cart-quantity-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cart-quantity-form .btn { font-family: inherit; }
+.product-errors.validation-summary-valid { display: none; }
+
 .cart-table {
   width: 100%;
   border-collapse: collapse;

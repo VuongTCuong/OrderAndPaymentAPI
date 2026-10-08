@@ -1,15 +1,16 @@
 using OrderAndPaymentAPI.Entities;
 using OrderAndPaymentAPI.Repositories;
+using OrderAndPaymentAPI.Exceptions;
 
 namespace OrderAndPaymentAPI.Services;
 
 public interface ICartService
 {
-    Task<Cart?> GetCartByUserIdAsync(int userId);
-    Task<Cart> AddItemAsync(int userId, int productId, int quantity);
+    Task<Cart?> GetCartByUserIdAsync(string userIdClaim);
+    Task<Cart> AddItemAsync(string userIdClaim, int productId, int quantity);
     Task<Cart> UpdateItemQuantityAsync(int userId, int productId, int quantity);
-    Task<bool> DeleteItemAsync(int userId, int productId);
-    Task<bool> ClearCartAsync(int userId);
+    Task DeleteItemAsync(string userIdClaim, int productId);
+    Task ClearCartAsync(string userIdClaim);
 }
 
 public class CartService: ICartService
@@ -25,28 +26,44 @@ public class CartService: ICartService
         _userRepo = userRepo;
     }
 
-    public async Task<Cart?> GetCartByUserIdAsync(int userId)
+    public int ChangeClaimtoInt(string userIdClaim)
     {
+        
+        if(userIdClaim == null)
+        {
+            throw new AppException("Người dùng không hợp lệ", 401);
+        }
+        if(!int.TryParse(userIdClaim, out int userId))
+        {
+            throw new AppException("Mã người dùng không hợp lệ", 400);
+        }
+        return userId;
+    }
+    public async Task<Cart?> GetCartByUserIdAsync(string userIdClaim)
+    {
+        int userId = ChangeClaimtoInt(userIdClaim);
         return await _cartRepo.GetByUserIdAsync(userId);
     }
 
-    public async Task<Cart> AddItemAsync(int userId, int productId, int quantity)
+    public async Task<Cart> AddItemAsync(string userIdClaim, int productId, int quantity)
     {
+        int userId = ChangeClaimtoInt(userIdClaim);
         if (quantity <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(quantity), "Số lượng phải lớn hơn 0.");
+            throw new AppException("Số lượng phải lớn hơn 0.", 400);
+        
         }
 
         var user = await _userRepo.GetByIdAsync(userId);
         if (user == null)
         {
-            throw new KeyNotFoundException("Không tìm thấy người dùng.");
+            throw new AppException("Không tìm thấy người dùng.", 404);
         }
 
         var product = await _productRepo.GetByIdAsync(productId);
         if (product == null)
         {
-            throw new KeyNotFoundException("Không tìm thấy sản phẩm.");
+            throw new AppException("Không tìm thấy sản phẩm.", 404);
         }
 
         var cart = await _cartRepo.GetByUserIdAsync(userId);
@@ -54,7 +71,7 @@ public class CartService: ICartService
         var totalQuantity = (long)(item?.Quantity ?? 0) + quantity;
         if (totalQuantity > product.Stock)
         {
-            throw new InvalidOperationException("Số lượng vượt quá tồn kho.");
+            throw new AppException("Số lượng vượt quá tồn kho.", 409);
         }
 
         var isNewCart = cart == null;
@@ -94,37 +111,56 @@ public class CartService: ICartService
     {
         if (quantity <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(quantity), "Số lượng phải lớn hơn 0.");
+            throw new AppException("Số lượng phải lớn hơn 0.", 400);
         }
 
         var cart = await _cartRepo.GetByUserIdAsync(userId);
         if (cart == null)
         {
-            throw new KeyNotFoundException("Không tìm thấy giỏ hàng.");
+            throw new AppException("Không tìm thấy giỏ hàng.", 404);
         }
 
         var item = cart.CartItems.SingleOrDefault(ci => ci.ProductId == productId);
         if (item == null)
         {
-            throw new KeyNotFoundException("Sản phẩm không có trong giỏ hàng.");
+            throw new AppException("Sản phẩm không có trong giỏ hàng.", 404);
         }
 
         if (quantity > item.Product.Stock)
         {
-            throw new InvalidOperationException("Số lượng vượt quá tồn kho.");
+            throw new AppException("Số lượng vượt quá tồn kho.", 409);
         }
 
         item.Quantity = quantity;
         return await _cartRepo.UpdateAsync(cart);
     }
 
-    public async Task<bool> DeleteItemAsync(int userId, int productId)
+    public async Task DeleteItemAsync(string userIdClaim, int productId)
     {
-        return await _cartRepo.DeleteItemAsync(userId, productId);
+        int userId = ChangeClaimtoInt(userIdClaim);
+        var cart = await _cartRepo.GetByUserIdAsync(userId);
+        var item = cart?.CartItems.SingleOrDefault(ci => ci.ProductId == productId);
+        if(cart==null)
+        {
+            throw new AppException("Không tìm thấy giỏ hàng người dùng", 404);
+        }
+        if(item==null)
+        {
+            throw new AppException("Không tìm thấy sản phẩm trong giỏ hàng", 404);
+        }
+
+        await _cartRepo.DeleteItemAsync(cart,item);
     }
 
-    public async Task<bool> ClearCartAsync(int userId)
+    public async Task ClearCartAsync(string userIdClaim)
     {
-        return await _cartRepo.ClearAsync(userId);
+        int userId = ChangeClaimtoInt(userIdClaim);
+
+        var cart = await _cartRepo.GetByUserIdAsync(userId);
+        if (cart == null)
+        {
+            throw new AppException("Không tìm thấy giỏ hàng người dùng", 404);
+        }
+        await _cartRepo.ClearAsync(cart);
     }
 }

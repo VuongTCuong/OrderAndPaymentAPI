@@ -1,3 +1,14 @@
+@using System.Security.Claims
+@inject OrderAndPaymentAPI.Services.ICartService CartService
+@{
+    var cartCount = 0;
+    var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(userIdClaim))
+    {
+        var cart = await CartService.GetCartByUserIdAsync(userIdClaim);
+        cartCount = cart?.CartItems.Count ?? 0;
+    }
+}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -12,7 +23,7 @@
             <a class="brand" href="/">Order<span>ly</span></a>
             <nav class="nav">
                 <a href="/Products">Sản phẩm</a>
-                <a href="/Cart">Giỏ hàng <span class="nav-cart-count">2</span></a>
+                <a href="/CartPage">Giỏ hàng <span class="nav-cart-count">@cartCount</span></a>
                 <a href="/Orders">Đơn hàng</a>
                 @if (User.Identity?.IsAuthenticated == true)
                 {

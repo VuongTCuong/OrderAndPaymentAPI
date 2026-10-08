@@ -9,8 +9,8 @@ public interface ICartRepository
     Task<Cart?> GetByUserIdAsync(int userId);
     Task<Cart> AddAsync(Cart cart);
     Task<Cart> UpdateAsync(Cart cart);
-    Task<bool> DeleteItemAsync(int userId, int productId);
-    Task<bool> ClearAsync(int userId);
+    Task DeleteItemAsync(Cart cart, CartItem cartItem);
+    Task ClearAsync(Cart cart);
 }
 
 public class CartRepository: ICartRepository
@@ -24,9 +24,7 @@ public class CartRepository: ICartRepository
 
     public async Task<Cart?> GetByUserIdAsync(int userId)
     {
-        return await _context.Cart
-            .Include(c => c.CartItems)
-            .ThenInclude(ci => ci.Product)
+        return await _context.Cart.Include(c => c.CartItems).ThenInclude(ci => ci.Product)
             .SingleOrDefaultAsync(c => c.UserId == userId);
     }
 
@@ -45,32 +43,18 @@ public class CartRepository: ICartRepository
         return cart;
     }
 
-    public async Task<bool> DeleteItemAsync(int userId, int productId)
+    public async Task DeleteItemAsync(Cart cart, CartItem cartItem)
     {
-        var cart = await GetByUserIdAsync(userId);
-        var item = cart?.CartItems.SingleOrDefault(ci => ci.ProductId == productId);
-        if (cart == null || item == null)
-        {
-            return false;
-        }
-
-        _context.CartItem.Remove(item);
+        _context.CartItem.Remove(cartItem);
         cart.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        return true;
     }
 
-    public async Task<bool> ClearAsync(int userId)
+    public async Task ClearAsync(Cart cart)
     {
-        var cart = await GetByUserIdAsync(userId);
-        if (cart == null)
-        {
-            return false;
-        }
-
         _context.CartItem.RemoveRange(cart.CartItems);
         cart.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        return true;
+    
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
 using System.Text;
+using OrderAndPaymentAPI.Middleware;
 
 
 
@@ -18,6 +19,9 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseMySQL(builder.
 
 //add controllers
 builder.Services.AddControllers();
+builder.Services.AddExceptionHandler<AppExceptionHandler>();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 //add services 
 builder.Services.AddScoped<IProductService, ProductService>();
@@ -74,6 +78,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddRazorPages(); 
 
 var app = builder.Build();
+app.UseExceptionHandler();
 app.UseRouting();   
 
 app.UseAuthentication();
