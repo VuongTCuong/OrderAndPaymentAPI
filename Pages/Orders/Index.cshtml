@@ -5,35 +5,103 @@
 }
 
 <div class="container page-head">
-    <h1>Đơn hàng của bạn</h1>
+    <h1>@(Model.IsAdmin ? "Đơn hàng cần duyệt" : "Đơn hàng của bạn")</h1>
     <p>@Model.Orders.Count đơn hàng</p>
 </div>
 
 <div class="container">
+    <div asp-validation-summary="All" class="auth-error" role="alert"></div>
+    @if (TempData["StatusNotice"] is string notice)
+    {
+        <p role="status">@notice</p>
+    }
     @foreach (var order in Model.Orders)
     {
-        <details class="order-card">
-            <summary>
+        <div class="order-entry">
+        <details class="order-card" name="customer-orders">
+            <summary class="@(Model.IsAdmin ? "order-admin-summary" : null)">
                 <div>
                     <div class="order-id">Đơn #@order.Id</div>
                     <div class="order-date">@order.CreatedAt.ToString("dd/MM/yyyy")</div>
                 </div>
+                @if (Model.IsAdmin)
+                {
+                    <div class="order-user-id"><strong>UserId:</strong> @order.UserId</div>
+                    var options = new[] { "Đang xử lý", "Đã xác nhận", "Hoàn thành", "Đã huỷ" };
+                    var currentStatus = OrderAndPaymentAPI.Web.Pages.Orders.IndexModel.StatusLabel(order.Status);
+                    <select class="order-status-select" name="status" form="order-status-@order.Id"
+                            aria-label="Trạng thái đơn #@order.Id" data-original-status="@order.Status">
+                        <option value="@order.Status" selected>@currentStatus</option>
+                        @foreach (var status in options.Where(s => OrderAndPaymentAPI.Web.Pages.Orders.IndexModel.StatusLabel(s) != currentStatus))
+                        {
+                            <option value="@status">@OrderAndPaymentAPI.Web.Pages.Orders.IndexModel.StatusLabel(status)</option>
+                        }
+                    </select>
+                }
+                else
+                {
                 <span class="badge @OrderAndPaymentAPI.Web.Pages.Orders.IndexModel.BadgeClass(order.Status)">
                     @OrderAndPaymentAPI.Web.Pages.Orders.IndexModel.StatusLabel(order.Status)
                 </span>
+                }
                 <div class="order-total">@order.TotalAmount.ToString("N0") ₫</div>
             </summary>
             <div class="order-items">
                 <table>
-                    @foreach (var item in order.Items)
+                    @foreach (var item in order.OrderItems)
                     {
                         <tr>
-                            <td>@item.ProductName × @item.Quantity</td>
-                            <td>@item.Subtotal.ToString("N0") ₫</td>
+                            <td>@item.Product.Name × @item.Quantity</td>
+                            <td>@((item.Price*item.Quantity).ToString("N0")) ₫</td>
                         </tr>
                     }
                 </table>
+                @if (!Model.IsAdmin && order.Status is ("Pending" or "Đang xử lý"))
+                {
+                    <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                        <button type="button" class="btn btn-outline btn-sm"
+                                data-cancel-order="@order.Id">
+                            Huỷ đơn hàng
+                        </button>
+                    </div>
+                }
             </div>
         </details>
+        @if (Model.IsAdmin)
+        {
+            <form id="order-status-@order.Id" class="order-approval-actions" method="post" asp-page-handler="UpdateOrderStatus" hidden>
+                <input type="hidden" name="orderId" value="@order.Id" />
+                <button type="submit" class="btn btn-primary btn-sm order-status-save">Lưu</button>
+            </form>
+        }
+        </div>
     }
 </div>
+
+<dialog id="cancel-order-dialog" class="cancel-order-dialog" aria-labelledby="cancel-order-title" aria-describedby="cancel-order-description">
+    <form id="cancel-order-form" method = "post" asp-page-handler="CancelOrder">
+        <input type="hidden" id="cancel-order-id" name="orderId" />
+        <h2 id="cancel-order-title">Huỷ đơn hàng</h2>
+        <p id="cancel-order-description">Chọn lý do bạn muốn huỷ đơn <strong id="cancel-order-number"></strong>.</p>
+        <fieldset class="cancel-reasons">
+            <legend>Lý do huỷ đơn hàng</legend>
+            <label class="cancel-reason"><span>Tôi muốn thay đổi sản phẩm hoặc số lượng</span><input type="radio" name="cancelReason" value="change-items" required /></label>
+            <label class="cancel-reason"><span>Tôi muốn thay đổi địa chỉ giao hàng</span><input type="radio" name="cancelReason" value="change-address" required /></label>
+            <label class="cancel-reason"><span>Tôi không còn nhu cầu mua hàng</span><input type="radio" name="cancelReason" value="no-longer-needed" required /></label>
+            <label class="cancel-reason"><span>Lý do khác</span><input id="cancel-other-option" type="radio" name="cancelReason" value="other" required /></label>
+        </fieldset>
+        <div class="field cancel-other-field">
+            <label for="cancel-other-reason">Nhập lý do khác</label>
+            <input id="cancel-other-reason" name="otherReason" type="text" maxlength="500" placeholder="Nhập lý do huỷ đơn hàng…" disabled />
+        </div>
+        <div class="cancel-order-actions">
+            <button type="submit" class="btn btn-primary">Đồng ý</button>
+            <button type="button" id="cancel-order-dismiss" class="btn btn-outline">Huỷ bỏ</button>
+        </div>
+    </form>
+</dialog>
+<script src="~/js/order-cancellation.js" asp-append-version="true" defer></script>
+@if (Model.IsAdmin)
+{
+    <script src="~/js/order-approval.js" asp-append-version="true" defer></script>
+}

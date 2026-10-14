@@ -208,6 +208,15 @@ a:hover { text-decoration: underline; }
 .quantity-step:disabled, .product-add-form .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .product-errors { color: var(--red); font-size: 0.9rem; margin-bottom: 20px; }
 
+.product-pagination { padding-bottom: 32px; text-align: center; }
+.product-pagination-info { margin: 0 0 12px; color: var(--ink-muted); font-size: 0.85rem; }
+.product-pagination-list { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.product-page-link { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; min-height: 40px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--ink); font-size: 0.9rem; }
+a.product-page-link:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+a.product-page-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.product-page-link.is-current { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.product-page-link.is-disabled { color: var(--ink-muted); opacity: 0.45; }
+
 /* ---------- Cart ---------- */
 .cart-quantity-form { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .cart-quantity-form .btn { font-family: inherit; }
@@ -260,6 +269,14 @@ a:hover { text-decoration: underline; }
 }
 
 /* ---------- Orders ---------- */
+.order-entry { margin-bottom: 16px; }
+.order-entry > .order-card { margin-bottom: 0; }
+.order-approval-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+.order-approval-actions[hidden] { display: none; }
 .order-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -282,6 +299,30 @@ a:hover { text-decoration: underline; }
 .order-id { font-weight: 600; }
 .order-date { color: var(--ink-muted); font-size: 0.85rem; }
 .order-total { font-family: 'Fraunces', serif; font-size: 1.1rem; }
+.order-status-select {
+  width: auto;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+.order-card summary.order-admin-summary {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(100px, 1fr) minmax(160px, 1fr) auto;
+}
+.order-admin-summary .order-status-select { justify-self: center; }
+.order-admin-summary .order-total { justify-self: end; }
+@media (max-width: 600px) {
+  .order-card summary { flex-wrap: wrap; }
+  .order-card summary.order-admin-summary {
+    grid-template-columns: 1fr auto;
+  }
+  .order-admin-summary .order-status-select { justify-self: end; }
+  .order-admin-summary .order-total { grid-column: 1; justify-self: start; }
+}
 
 .badge {
   display: inline-block;
@@ -293,6 +334,7 @@ a:hover { text-decoration: underline; }
 
 .badge-completed { background: #e4efe8; color: var(--accent); }
 .badge-pending { background: #f5ecdc; color: var(--amber); }
+.badge-confirmed { background: #f2cc60; color: #684b08; }
 .badge-cancelled { background: #f3e3e0; color: var(--red); }
 
 .order-items {
@@ -303,6 +345,41 @@ a:hover { text-decoration: underline; }
 .order-items table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .order-items td { padding: 6px 0; }
 .order-items td:last-child { text-align: right; }
+
+/* ---------- Order cancellation ---------- */
+.cancel-order-dialog {
+  width: min(520px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+}
+.cancel-order-dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+.cancel-order-dialog h2 { margin: 0 0 8px; }
+.cancel-order-dialog p { color: var(--ink-muted); margin-bottom: 20px; }
+.cancel-reasons { border: 0; padding: 0; margin: 0 0 20px; min-width: 0; }
+.cancel-reasons legend { font-weight: 600; margin-bottom: 10px; }
+.cancel-reason {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.cancel-reason:has(input:checked) { border-color: var(--accent); background: #e4efe8; }
+.cancel-reason input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--accent); }
+.cancel-other-field input:disabled { background: #f3f3f3; cursor: not-allowed; }
+.cancel-order-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.cancel-order-actions .btn { min-width: 100px; }
+.cancel-order-dialog .cancel-order-feedback { color: var(--red); font-size: 0.9rem; }
 
 /* ---------- Auth ---------- */
 .auth-wrap {

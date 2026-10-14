@@ -2,8 +2,9 @@
 @inject OrderAndPaymentAPI.Services.ICartService CartService
 @{
     var cartCount = 0;
+    var showCart = !User.IsInRole("admin");
     var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    if (User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(userIdClaim))
+    if (showCart && User.Identity?.IsAuthenticated == true && !string.IsNullOrEmpty(userIdClaim))
     {
         var cart = await CartService.GetCartByUserIdAsync(userIdClaim);
         cartCount = cart?.CartItems.Count ?? 0;
@@ -23,7 +24,10 @@
             <a class="brand" href="/">Order<span>ly</span></a>
             <nav class="nav">
                 <a href="/Products">Sản phẩm</a>
-                <a href="/CartPage">Giỏ hàng <span class="nav-cart-count">@cartCount</span></a>
+                @if (showCart)
+                {
+                    <a href="/CartPage">Giỏ hàng <span class="nav-cart-count">@cartCount</span></a>
+                }
                 <a href="/Orders">Đơn hàng</a>
                 @if (User.Identity?.IsAuthenticated == true)
                 {

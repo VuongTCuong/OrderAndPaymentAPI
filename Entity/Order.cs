@@ -10,6 +10,9 @@ public class Order
     public DateTime CreatedAt {get; set;}
     public DateTime UpdatedAt {get; set;}
 
+    public DateTime? CanceledAt {get;set;}
+    public string? CanceledReason {get;set;}
+
     // 1 order - N orderitem
-    public ICollection<OrderItem> OrderItems = new List<OrderItem>();
+    public ICollection<OrderItem> OrderItems{get;set;} = new List<OrderItem>();
 }

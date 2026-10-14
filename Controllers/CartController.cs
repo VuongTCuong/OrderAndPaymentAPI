@@ -49,4 +49,37 @@ public class CartController: ControllerBase
                 Price = item.Product.Price
             }).ToList());
     }
+    [Authorize(Roles = "user")]
+    [HttpPut("update")]
+    public async Task<IActionResult> UpdateCart(UpdateCartRequestDTO updateCartRequestDTO)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var cart = await _cartService.UpdateItemQuantityAsync(userIdClaim, updateCartRequestDTO.productId, updateCartRequestDTO.quantity);
+        return Ok(cart?.CartItems.Select(item => new
+            {
+                item.CartId,
+                item.ProductId,
+                item.Quantity,
+                ProductName = item.Product.Name,
+                Price = item.Product.Price
+            }).ToList());
+    }
+
+    [Authorize(Roles = "user")]
+    [HttpDelete("delete/{productId:int}")]
+    public async Task<IActionResult> DeleteItem(int productId)
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await _cartService.DeleteItemAsync(userIdClaim, productId);
+        return Ok(new { message = "Đã xóa sản phẩm khỏi giỏ hàng." });
+    }
+
+    [Authorize(Roles = "user")]
+    [HttpDelete("clear")]
+    public async Task<IActionResult> ClearCart()
+    {
+        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        await _cartService.ClearCartAsync(userIdClaim);
+        return Ok(new { message = "Đã xóa toàn bộ giỏ hàng." });
+    }
 }

@@ -3,6 +3,9 @@
 @{
     ViewData["Title"] = "Sản phẩm";
     bool isAdmin = User.IsInRole("admin");
+    var currentPage = int.TryParse(Request.Query["pageNumber"].ToString(), out var pageNumber)
+        ? Math.Max(1, pageNumber)
+        : 1;
 }
 
 <div class="container page-head">
@@ -54,4 +57,42 @@
         </div>
     }
 </div>
+<nav class="container product-pagination" aria-label="Phân trang sản phẩm">
+    <p class="product-pagination-info">Trang @currentPage / @Model.totalPage</p>
+    <ul class="product-pagination-list">
+        <li>
+            @if (currentPage > 1)
+            {
+                <a class="product-page-link" asp-page="/Products/Index" asp-route-pageNumber="@(currentPage - 1)" aria-label="Trang trước">‹ Trước</a>
+            }
+            else
+            {
+                <span class="product-page-link is-disabled" aria-disabled="true">‹ Trước</span>
+            }
+        </li>
+        @for (var number = 1; number <= @Model.totalPage; number++)
+        {
+            <li>
+                @if (number == currentPage)
+                {
+                    <span class="product-page-link is-current" aria-current="page" aria-label="Trang @number">@number</span>
+                }
+                else
+                {
+                    <a class="product-page-link" asp-page="/Products/Index" asp-route-pageNumber="@number" aria-label="Trang @number">@number</a>
+                }
+            </li>
+        }
+        <li>
+            @if (currentPage < @Model.totalPage)
+            {
+                <a class="product-page-link" asp-page="/Products/Index" asp-route-pageNumber="@(currentPage + 1)" aria-label="Trang sau">Sau ›</a>
+            }
+            else
+            {
+                <span class="product-page-link is-disabled" aria-disabled="true">Sau ›</span>
+            }
+        </li>
+    </ul>
+</nav>
 <script src="~/js/product-quantity.js" asp-append-version="true" defer></script>

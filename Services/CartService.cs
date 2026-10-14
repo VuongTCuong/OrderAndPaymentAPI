@@ -8,6 +8,7 @@ public interface ICartService
 {
     Task<Cart?> GetCartByUserIdAsync(string userIdClaim);
     Task<Cart> AddItemAsync(string userIdClaim, int productId, int quantity);
+    Task<Cart> UpdateItemQuantityAsync(string userIdClaim, int productId, int quantity);
     Task<Cart> UpdateItemQuantityAsync(int userId, int productId, int quantity);
     Task DeleteItemAsync(string userIdClaim, int productId);
     Task ClearCartAsync(string userIdClaim);
@@ -105,6 +106,12 @@ public class CartService: ICartService
         }
 
         return await _cartRepo.UpdateAsync(cart);
+    }
+
+    public Task<Cart> UpdateItemQuantityAsync(string userIdClaim, int productId, int quantity)
+    {
+        int userId = ChangeClaimtoInt(userIdClaim);
+        return UpdateItemQuantityAsync(userId, productId, quantity);
     }
 
     public async Task<Cart> UpdateItemQuantityAsync(int userId, int productId, int quantity)

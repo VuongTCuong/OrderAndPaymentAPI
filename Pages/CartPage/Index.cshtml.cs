@@ -12,16 +12,16 @@ namespace OrderAndPaymentAPI.Web.Pages.CartPage;
 public class IndexModel : PageModel
 {
     public Cart cart{  get; set; } = new();
-
+    private string? userIdClaim => User.FindFirstValue(ClaimTypes.NameIdentifier); 
     private readonly ICartService _cartService;
-
-    public IndexModel(ICartService cartService)
+    private readonly IOrderService _orderService;
+    public IndexModel(ICartService cartService, IOrderService orderService)
     {
         _cartService = cartService;
+        _orderService = orderService;
     }
     public async Task OnGet()
     {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         cart = string.IsNullOrEmpty(userIdClaim)
             ? new Cart()
             : await _cartService.GetCartByUserIdAsync(userIdClaim) ?? new Cart();
@@ -31,7 +31,7 @@ public class IndexModel : PageModel
     public async Task<IActionResult> OnPostUpdateQuantityAsync(int productId, int quantity)
     {
         if (User.Identity?.IsAuthenticated != true ||
-            !int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            !int.TryParse(userIdClaim, out var userId))
         {
             return RedirectToPage("/Account/Login");
         }
@@ -55,14 +55,16 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnPostDeleteCartItemAsync(int productId)
     {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         await _cartService.DeleteItemAsync(userIdClaim, productId);
         await OnGet();
         return RedirectToPage();
     }
-    public IActionResult OnPostCheckout()
+    
+    public async Task<IActionResult> OnPostCheckout()
     {
-        // TODO: gọi POST /api/orders để tạo đơn hàng từ giỏ hàng hiện tại
+        await _orderService.AddOrderAsync(userIdClaim);
         return RedirectToPage("/Orders/Index");
     }
+
+   
 }
