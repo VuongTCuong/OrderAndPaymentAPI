@@ -138,7 +138,6 @@ Program.cs        Service registration and application pipeline
 ## Current limitations and possible improvements
 
 - Checkout is simulated; no real payment provider is connected.
-- Order creation should use `POST` instead of `GET`.
 - Add an automated test project for service and controller behavior.
 - Add API examples, sample request bodies, and API documentation.
 - Review transaction boundaries and order status transitions for edge cases.
